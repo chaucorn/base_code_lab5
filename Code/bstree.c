@@ -123,7 +123,11 @@ void bstree_remove(ptrBinarySearchTree* t, int v) {
 /*------------------------  BSTreeVisitors  -----------------------------*/
 
 void bstree_depth_prefix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    if(t->key != NULL){
+        f(t, environment);
+    }
+    bstree_depth_prefix(bstree_left(t), f, environment);
+    bstree_depth_prefix(bstree_right(t), f, environment);
 }
 
 void bstree_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
