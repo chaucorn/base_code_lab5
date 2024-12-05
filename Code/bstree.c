@@ -76,7 +76,16 @@ BinarySearchTree* bstree_parent(const BinarySearchTree* t) {
 
 /* Obligation de passer l'arbre par référence pour pouvoir le modifier */
 void bstree_add(ptrBinarySearchTree* t, int v) {
-	(void)t; (void)v;
+	if (*t == NULL){
+        *t = bstree_cons(NULL, NULL, v);
+    }else{
+        BinarySearchTree* bn_tree = *t;
+        if (v > bn_tree->key){
+            bstree_add(&bn_tree->right, v);
+        }else{
+            bstree_add(&bn_tree->left, v);
+        } 
+    }
 }
 
 const BinarySearchTree* bstree_search(const BinarySearchTree* t, int v) {
