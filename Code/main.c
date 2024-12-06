@@ -6,11 +6,11 @@
 /* Define this for solving the exercice 1. */
 #define EXERCICE_1
 /* Define this for solving the exercice 2. */
-//#define EXERCICE_2
+#define EXERCICE_2
 /* Define this for solving the exercice 3. */
-//#define EXERCICE_3
+#define EXERCICE_3
 /* Define this for solving the exercice 4. */
-//#define EXERCICE_4
+#define EXERCICE_4
 /* Define this for solving the exercice 5. */
 //#define EXERCICE_5
 /* Define this for solving the exercice 6. */

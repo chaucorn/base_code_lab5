@@ -82,28 +82,103 @@ void bstree_add(ptrBinarySearchTree* t, int v) {
         BinarySearchTree* bn_tree = *t;
         if (v > bn_tree->key){
             bstree_add(&bn_tree->right, v);
+            bn_tree->right->parent = *t;
         }else{
             bstree_add(&bn_tree->left, v);
+            bn_tree->left->parent = *t;
         } 
     }
 }
 
 const BinarySearchTree* bstree_search(const BinarySearchTree* t, int v) {
-    (void)t; (void)v;
+    if (t != NULL){
+        int key = t->key;
+        if (v < key){
+            return bstree_search(t->left, v);
+        }
+        else if (v > key){
+            return bstree_search(t->right, v);
+        }
+        else{
+            return t;
+        }
+    }
     return NULL;
+}
+
+const BinarySearchTree* bigger_node(const BinarySearchTree* node1, const BinarySearchTree* node2){
+    if (node1&&node2){
+        int key1 = node1->key;
+        int key2 = node2->key;
+        return (key1>key2)?node1:node2;
+    }else{
+        return (node1)?node1:node2;
+    }    
+}
+
+const BinarySearchTree* smaller_node(const BinarySearchTree* node1, const BinarySearchTree* node2){
+    if (node1&&node2){
+        int key1 = node1->key;
+        int key2 = node2->key;
+        return (key1<key2)?node1:node2;
+    }else{
+        return (node1)?node1:node2;
+    }    
 }
 
 const BinarySearchTree* bstree_successor(const BinarySearchTree* x) {
     assert(!bstree_empty(x));
-    (void)x;
-    return NULL;
+    // Find upper successor
+    const BinarySearchTree* successor_upper = NULL;
+    const BinarySearchTree* successor_lower = NULL;
+    if (x->parent!=NULL){
+        // if node is the left child of its parent
+        const BinarySearchTree* parent = x->parent;
+        if (parent->left!=NULL&&parent->left ==x){
+            successor_upper = x->parent;
+        }else if(parent->parent!=NULL&&(parent->parent)->right == parent){
+            successor_upper = parent->parent;
+            }
+        }
+    // Find lower successor
+    if (x->right != NULL){
+        successor_lower = x->right;
+        while (successor_lower->left != NULL){
+            successor_lower = successor_lower->left;
+        }
+    }
+    return smaller_node(successor_lower, successor_upper);
 }
+
 
 const BinarySearchTree* bstree_predecessor(const BinarySearchTree* x) {
     assert(!bstree_empty(x));
-    (void)x;
-    return NULL;
+    // Find upper predecessor
+    const BinarySearchTree* predecessor_upper = NULL;
+    const BinarySearchTree* predecessor_lower = NULL;
+    if (x->parent!=NULL){
+        // if node is right child
+        const BinarySearchTree* parent = x->parent;
+        if (parent->left!=NULL&&parent->left ==x){
+            if(parent->parent!=NULL&&(parent->parent)->right == parent){
+                predecessor_upper = parent->parent;
+            }
+        }
+        if (parent->right!=NULL&&parent->right == x){
+            predecessor_upper = parent;
+        }
+        
+    }
+    // Find lower predecessor
+    if (x->left != NULL){
+        predecessor_lower = x->left;
+        while (predecessor_lower->right != NULL){
+            predecessor_lower = predecessor_lower->right;
+        }
+    }
+    return bigger_node(predecessor_lower, predecessor_upper);
 }
+
 
 void bstree_swap_nodes(ptrBinarySearchTree* tree, ptrBinarySearchTree from, ptrBinarySearchTree to) {
     assert(!bstree_empty(*tree) && !bstree_empty(from) && !bstree_empty(to));
@@ -123,23 +198,57 @@ void bstree_remove(ptrBinarySearchTree* t, int v) {
 /*------------------------  BSTreeVisitors  -----------------------------*/
 
 void bstree_depth_prefix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    if (t!=NULL)
+    {
+        printf("%i ", t->key);
+        bstree_depth_prefix(t->left, f, environment);
+        bstree_depth_prefix(t->right, f, environment);
+    }
+    
 }
 
 void bstree_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    if (t!=NULL)
+    {
+        
+        bstree_depth_infix(t->left, f, environment);
+        printf("%i ", t->key);
+        bstree_depth_infix(t->right, f, environment);
+        
+    }
 }
 
 void bstree_depth_postfix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    if (t != NULL)
+    {
+        bstree_depth_postfix(t->left, f, environment);
+        bstree_depth_postfix(t->right, f, environment);
+        printf("%i ", t->key);
+    }
+    
 }
 
 void bstree_iterative_breadth(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    Queue* q = create_queue();
+    if (t != NULL){
+        queue_push(q, t);
+    }
+    while (!queue_empty(q)){
+        const BinarySearchTree* node = queue_top(q);
+        f(node, environment);
+        queue_pop(q);
+        if (node->left != NULL){
+            queue_push(q, node->left);
+        }
+        if (node->right != NULL){
+            queue_push(q, node->right);
+        }
+    }
 }
 
 void bstree_iterative_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
     (void)t; (void) f; (void)environment;
+    
 }
 
 /*------------------------  BSTreeIterator  -----------------------------*/
