@@ -288,7 +288,8 @@ void bstree_remove(ptrBinarySearchTree* t, int v) {
 void bstree_depth_prefix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
     if (t!=NULL)
     {
-        printf("%i ", t->key);
+        //printf("%i ", t->key);
+        f(t, environment);
         bstree_depth_prefix(t->left, f, environment);
         bstree_depth_prefix(t->right, f, environment);
     }
@@ -300,7 +301,8 @@ void bstree_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* envir
     {
         
         bstree_depth_infix(t->left, f, environment);
-        printf("%i ", t->key);
+        f(t, environment);
+        //printf("%i ", t->key);
         bstree_depth_infix(t->right, f, environment);
         
     }
@@ -311,7 +313,8 @@ void bstree_depth_postfix(const BinarySearchTree* t, OperateFunctor f, void* env
     {
         bstree_depth_postfix(t->left, f, environment);
         bstree_depth_postfix(t->right, f, environment);
-        printf("%i ", t->key);
+        f(t, environment);
+        //printf("%i ", t->key);
     }
     
 }
@@ -332,6 +335,7 @@ void bstree_iterative_breadth(const BinarySearchTree* t, OperateFunctor f, void*
             queue_push(q, node->right);
         }
     }
+    delete_queue(&q);
 }
 
 void bstree_iterative_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* environment) {

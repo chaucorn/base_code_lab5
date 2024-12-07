@@ -16,7 +16,7 @@
 /* Define this for solving the exercice 6. */
 #define EXERCICE_6
 /* Define this for solving the exercice 7. */
-//#define EXERCICE_7
+#define EXERCICE_7
 
 /** This function reads an int from a file with result checking */
 int read_int(FILE* input) {
