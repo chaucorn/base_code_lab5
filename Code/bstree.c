@@ -14,6 +14,11 @@ struct _bstree {
     BinarySearchTree* right;
     int key;
 };
+typedef const BinarySearchTree* (*AccessFunction) (const BinarySearchTree*);
+typedef struct {
+    AccessFunction left;
+    AccessFunction right;
+} ChildAccessor;
 
 /*------------------------  BaseBSTree  -----------------------------*/
 
@@ -126,6 +131,40 @@ const BinarySearchTree* smaller_node(const BinarySearchTree* node1, const Binary
     }    
 }
 
+const BinarySearchTree* accessLeft(const BinarySearchTree* x){
+    const BinarySearchTree* predecessor_child =  NULL;
+    if (x->left != NULL){
+        predecessor_child = x->left;
+        while (predecessor_child->right != NULL){
+            predecessor_child = predecessor_child->right;
+        }
+        
+    }
+    return predecessor_child;
+    
+}
+
+
+const BinarySearchTree* accessRight(const BinarySearchTree* x){
+    const BinarySearchTree* successor_child =  NULL;
+    if (x->left != NULL){
+        successor_child = x->right;
+        while (successor_child->left != NULL){
+            successor_child = successor_child->left;
+        }
+        
+    }
+    return successor_child;
+    
+}
+
+
+const BinarySearchTree* find_next(const BinarySearchTree* x, AccessFunction access){
+    const BinarySearchTree* next_node=  access(x);
+    return next_node;
+    
+}
+
 const BinarySearchTree* bstree_successor(const BinarySearchTree* x) {
     assert(!bstree_empty(x));
     // Find upper successor
@@ -140,13 +179,9 @@ const BinarySearchTree* bstree_successor(const BinarySearchTree* x) {
             successor_upper = parent->parent;
             }
         }
-    // Find lower successor
-    if (x->right != NULL){
-        successor_lower = x->right;
-        while (successor_lower->left != NULL){
-            successor_lower = successor_lower->left;
-        }
-    }
+    // Find lower successor on the right
+    ChildAccessor accessor = {.left = accessLeft, .right=accessRight};
+    successor_lower = find_next(x, accessor.right);
     return smaller_node(successor_lower, successor_upper);
 }
 
@@ -169,30 +204,83 @@ const BinarySearchTree* bstree_predecessor(const BinarySearchTree* x) {
         }
         
     }
-    // Find lower predecessor
-    if (x->left != NULL){
-        predecessor_lower = x->left;
-        while (predecessor_lower->right != NULL){
-            predecessor_lower = predecessor_lower->right;
-        }
-    }
+    // Find lower predecessor on the left
+    ChildAccessor accessor = {.left = accessLeft, .right = accessRight};
+    predecessor_lower = find_next(x, accessor.left);
     return bigger_node(predecessor_lower, predecessor_upper);
 }
 
-
-void bstree_swap_nodes(ptrBinarySearchTree* tree, ptrBinarySearchTree from, ptrBinarySearchTree to) {
+//void bstree_swap_nodes(ptrBinarySearchTree* tree, ptrBinarySearchTree from, ptrBinarySearchTree to)
+void bstree_swap_nodes(ptrBinarySearchTree from, ptrBinarySearchTree to) {
     assert(!bstree_empty(*tree) && !bstree_empty(from) && !bstree_empty(to));
-    (void)tree; (void)from; (void)to;
+    int value_from = from->key;
+    int value_to = to->key;
+    from->key = value_to;
+    to->key = value_from;
 }
 
 // t -> the tree to remove from, current -> the node to remove
-void bstree_remove_node(ptrBinarySearchTree* t, ptrBinarySearchTree current) {
-    assert(!bstree_empty(*t) && !bstree_empty(current));
-    (void)t; (void)current;
+//void bstree_remove_node(ptrBinarySearchTree* t, ptrBinarySearchTree current) 
+void bstree_remove_node(ptrBinarySearchTree current) {
+    // Cas 1 node has no child
+    if (current->left == NULL&& current->right == NULL)
+    {
+        if (current->parent != NULL)
+        {
+            BinarySearchTree* parent = current->parent;
+            parent->left = (parent->left == current)?  NULL : parent->left ;
+            parent->right = (parent->right == current)? NULL :parent->right ;
+        }
+        free(current);
+    }
+    // Case 2: Node has two children
+    else if (current->left != NULL&& current->right != NULL) {
+        // Cast const type to node
+        const BinarySearchTree* current_const = (const BinarySearchTree*) current;
+        // Find successor
+        BinarySearchTree* successor = (BinarySearchTree*) bstree_successor(current_const); 
+        bstree_swap_nodes(current, successor);
+        bstree_remove_node(successor);
+        
+    }
+    // Case 3: only left child
+    else if (current->left != NULL && current->right == NULL){
+        if (current->parent != NULL)
+        {
+            BinarySearchTree* parent = current->parent;
+            parent->left = (parent->left == current)?  current->left : parent->left ;
+            parent->right = (parent->right == current)? current->left :parent->right ;
+            current->left->parent = parent;
+        }else{
+            current->left->parent = NULL;
+        }
+        free(current);
+        
+    }
+    // Case 4 only right child
+    else if (current->right != NULL && current->left == NULL) {
+        if (current->parent != NULL)
+        {
+            BinarySearchTree* parent = current->parent;
+            parent->left = (parent->left == current)?  current->right : parent->left ;
+            parent->right = (parent->right == current)? current->right :parent->right ;
+            current->right->parent = parent;
+        }else{
+            current->right->parent = NULL;
+        }
+        free(current);
+    }
 }
 
 void bstree_remove(ptrBinarySearchTree* t, int v) {
-    (void)t; (void)v;
+    assert (!bstree_empty(*t));
+    const ptrBinarySearchTree tree = *t;
+    const ptrBinarySearchTree node = (const ptrBinarySearchTree) bstree_search(tree, v) ;
+    if (node != NULL){
+        ptrBinarySearchTree to_remove = (ptrBinarySearchTree) node; 
+        bstree_remove_node(to_remove);
+    }
+
 }
 
 /*------------------------  BSTreeVisitors  -----------------------------*/
@@ -247,7 +335,8 @@ void bstree_iterative_breadth(const BinarySearchTree* t, OperateFunctor f, void*
 }
 
 void bstree_iterative_depth_infix(const BinarySearchTree* t, OperateFunctor f, void* environment) {
-    (void)t; (void) f; (void)environment;
+    bstree_depth_infix(t, f, environment);
+    
     
 }
 
