@@ -24,6 +24,8 @@
 /* TODO : remove ambiguity by defining an opaque node type and the tree as a pointer to a node ... */
 typedef struct _bstree BinarySearchTree;
 typedef BinarySearchTree* ptrBinarySearchTree;
+
+
 /** @} */
 
 /*------------------------  BaseBSTree  -----------------------------*/
